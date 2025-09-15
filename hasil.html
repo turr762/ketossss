@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hasil Pemilihan Ketua OSIS 2025</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Firebase SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background-color: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    canvas {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Hasil Pemilihan Ketua OSIS 2025</h1>
+    <canvas id="voteChart" height="200"></canvas>
+  </div>
+
+  <script>
+    // Konfigurasi Firebase kamu (ketos3)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjqS997qX7IMXTF9UJ-mz-qp3OGrqmV1w",
+      authDomain: "ketos3.firebaseapp.com",
+      databaseURL: "https://ketos3-default-rtdb.firebaseio.com",
+      projectId: "ketos3",
+      storageBucket: "ketos3.firebasestorage.app",
+      messagingSenderId: "731730272335",
+      appId: "1:731730272335:web:3bb30d165a45c6b2f98a3a",
+      measurementId: "G-YQTDTR2WX6"
+    };
+
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+    const db = firebase.database();
+
+    // Daftar kandidat dan inisialisasi suara
+    const kandidat = ['NO1', 'NO2', 'NO3', 'NO4', 'NO5', 'NO6', 'NO7', 'NO8'];
+    const suara = Array(kandidat.length).fill(0);
+
+    // Warna batang untuk masing-masing kandidat
+    const warna = [
+      '#4e73df', '#1cc88a', '#e74a3b', '#f6c23e',
+      '#36b9cc', '#a569bd', '#f1948a', '#5d6d7e'
+    ];
+
+    // Inisialisasi Chart.js
+    const ctx = document.getElementById('voteChart').getContext('2d');
+    const voteChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: kandidat,
+        datasets: [{
+          label: 'Jumlah Suara',
+          data: suara,
+          backgroundColor: warna,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Jumlah Suara'
+            }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.parsed.y + ' suara';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Update chart secara realtime dari Firebase
+    db.ref("suara").on("value", snapshot => {
+      const data = snapshot.val() || {};
+      kandidat.forEach((nama, index) => {
+        suara[index] = data[nama] || 0;
+      });
+      voteChart.update();
+    });
+  </script>
+
+</body>
+</html>
